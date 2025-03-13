@@ -3,7 +3,7 @@ pragma solidity ^0.8.26;
 import {EIP712} from "./EIP712.sol";
 import {Payment} from "./Payment.sol";
 contract BlueprintCore is EIP712, Payment {
-    enum Status {Init, Issued, Pickup, Deploying, Deployed, GeneratedProof}
+    enum Status { Init, Issued, Pickup, Deploying, Deployed, GeneratedProof }
     struct DeploymentStatus {
         Status status;
         address deployWorkerAddr;
