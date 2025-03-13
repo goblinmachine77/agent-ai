@@ -47,13 +47,37 @@ contract BlueprintCore is EIP712, Payment {
     mapping(address => mapping(address => uint256)) public userTopUpMp;
     event CreateProjectID(bytes32 indexed projectID, address walletAddress);
     event RequestProposal(
-        bytes32 indexed projectID,address walletAddress,bytes32 indexed requestID,string base64RecParam,string serverURL );
+        bytes32 indexed projectID,
+        address walletAddress,
+        bytes32 indexed requestID,
+        string base64RecParam,
+        string serverURL
+    );
     event RequestPrivateProposal(
-        bytes32 indexed projectID,address walletAddress,address privateSolverAddress,bytes32 indexed requestID,string base64RecParam,string serverURL );
+        bytes32 indexed projectID,
+        address walletAddress,
+        address privateSolverAddress,
+        bytes32 indexed requestID,
+        string base64RecParam,
+        string serverURL
+    );
     event RequestDeployment(
-        bytes32 indexed projectID,address walletAddress,address solverAddress,bytes32 indexed requestID,string base64Proposal,string serverURL);
+        bytes32 indexed projectID,
+        address walletAddress,
+        address solverAddress,
+        bytes32 indexed requestID,
+        string base64Proposal,
+        string serverURL
+    );
     event RequestPrivateDeployment(
-        bytes32 indexed projectID,address walletAddress,address privateWorkerAddress,address solverAddress,bytes32 indexed requestID, string base64Proposal,string serverURL );
+        bytes32 indexed projectID,
+        address walletAddress,
+        address privateWorkerAddress,
+        address solverAddress,
+        bytes32 indexed requestID,
+        string base64Proposal,
+        string serverURL
+    );
     event AcceptDeployment(bytes32 indexed projectID, bytes32 indexed requestID, address indexed workerAddress);
     event GeneratedProofOfDeployment(
         bytes32 indexed projectID, bytes32 indexed requestID, string base64DeploymentProof
@@ -97,7 +121,11 @@ contract BlueprintCore is EIP712, Payment {
         projects[projectId].proposedSolverAddr = dummyAddress;
     }
     function proposalRequest(
-        address userAddress, bytes32 projectId, address solverAddress, string memory base64RecParam, string memory serverURL
+        address userAddress,
+        bytes32 projectId,
+        address solverAddress,
+        string memory base64RecParam,
+        string memory serverURL
     ) internal hasProject(projectId) returns (bytes32 requestID) {
         require(bytes(serverURL).length > 0, "serverURL is empty");
         require(bytes(base64RecParam).length > 0, "base64RecParam is empty");
@@ -111,7 +139,10 @@ contract BlueprintCore is EIP712, Payment {
         }
     }
     function createCommonProposalRequest(
-        address userAddress, bytes32 projectId, string memory base64RecParam, string memory serverURL
+        address userAddress,
+        bytes32 projectId,
+        string memory base64RecParam,
+        string memory serverURL
     ) internal returns (bytes32 requestID) {
         requestID = proposalRequest(userAddress, projectId, dummyAddress, base64RecParam, serverURL);
         emit RequestProposal(projectId, userAddress, requestID, base64RecParam, serverURL);
@@ -124,7 +155,10 @@ contract BlueprintCore is EIP712, Payment {
         requestID = createCommonProposalRequest(msg.sender, projectId, base64RecParam, serverURL);
     }
     function createProjectIDAndProposalRequestWithSig(
-        bytes32 projectId, string memory base64RecParam, string memory serverURL, bytes memory signature
+        bytes32 projectId,
+        string memory base64RecParam,
+        string memory serverURL,
+        bytes memory signature
     ) public returns (bytes32 requestID) {
         bytes32 digest = getRequestProposalDigest(projectId, base64RecParam, serverURL);
         address signerAddr = getSignerAddress(digest, signature);
@@ -132,7 +166,13 @@ contract BlueprintCore is EIP712, Payment {
         requestID = createCommonProposalRequest(signerAddr, projectId, base64RecParam, serverURL);
     }
     function deploymentRequest(
-        address userAddress, bytes32 projectId, address solverAddress, address workerAddress, string memory base64Proposal, string memory serverURL, uint256 index
+        address userAddress,
+        bytes32 projectId,
+        address solverAddress,
+        address workerAddress,
+        string memory base64Proposal,
+        string memory serverURL,
+        uint256 index
     ) internal hasProject(projectId) returns (bytes32 requestID, bytes32 projectDeploymentId) {
         require(bytes(serverURL).length > 0, "serverURL is empty");
         require(bytes(base64Proposal).length > 0, "base64Proposal is empty");
@@ -150,7 +190,12 @@ contract BlueprintCore is EIP712, Payment {
         projects[projectId].proposedSolverAddr = solverAddress;
     }
     function createCommonDeploymentRequest(
-        address userAddress, bytes32 projectId, address solverAddress, address workerAddress, string memory base64Proposal, string memory serverURL
+        address userAddress,
+        bytes32 projectId,
+        address solverAddress,
+        address workerAddress,
+        string memory base64Proposal,
+        string memory serverURL
     ) internal returns (bytes32 requestID) {
         require(solverAddress != dummyAddress, "solverAddress is not valid");
         bytes32 projectDeploymentId;
@@ -169,7 +214,11 @@ contract BlueprintCore is EIP712, Payment {
         }
     }
     function createCommonProjectIDAndDeploymentRequest(
-        address userAddress, bytes32 projectId, string memory base64Proposal, address workerAddress, string memory serverURL
+        address userAddress,
+        bytes32 projectId,
+        string memory base64Proposal,
+        address workerAddress,
+        string memory serverURL
     ) internal returns (bytes32 requestID) {
         setProjectId(projectId, userAddress);
         bytes32 projectDeploymentId;
@@ -188,13 +237,18 @@ contract BlueprintCore is EIP712, Payment {
         }
     }
     function createProjectIDAndDeploymentRequest(
-        bytes32 projectId, string memory base64Proposal, string memory serverURL
+        bytes32 projectId,
+        string memory base64Proposal,
+        string memory serverURL
     ) public returns (bytes32 requestID) {
         requestID =
             createCommonProjectIDAndDeploymentRequest(msg.sender, projectId, base64Proposal, dummyAddress, serverURL);
     }
     function createProjectIDAndDeploymentRequestWithSig(
-        bytes32 projectId, string memory base64Proposal, string memory serverURL, bytes memory signature
+        bytes32 projectId,
+        string memory base64Proposal,
+        string memory serverURL,
+        bytes memory signature
     ) public returns (bytes32 requestID) {
         bytes32 digest = getRequestDeploymentDigest(projectId, base64Proposal, serverURL);
         address signerAddr = getSignerAddress(digest, signature);
@@ -202,14 +256,23 @@ contract BlueprintCore is EIP712, Payment {
             createCommonProjectIDAndDeploymentRequest(signerAddr, projectId, base64Proposal, dummyAddress, serverURL);
     }
     function createProjectIDAndPrivateDeploymentRequest(
-        bytes32 projectId, string memory base64Proposal,address privateWorkerAddress, string memory serverURL
+        bytes32 projectId,
+        string memory base64Proposal,
+        address privateWorkerAddress,
+        string memory serverURL
     ) public returns (bytes32 requestID) {
         requestID = createCommonProjectIDAndDeploymentRequest(
             msg.sender, projectId, base64Proposal, privateWorkerAddress, serverURL
         );
     }
     function createAgent(
-        address userAddress,  bytes32 projectId,  string memory base64Proposal, address privateWorkerAddress, string memory serverURL, uint256 tokenId, address tokenAddress
+        address userAddress,
+        bytes32 projectId,
+        string memory base64Proposal,
+        address privateWorkerAddress,
+        string memory serverURL,
+        uint256 tokenId,
+        address tokenAddress
     ) internal returns (bytes32 requestID) {
         if (tokenAddress == address(0)) {
             require(nftTokenIdMap[tokenId] != Status.Pickup, "NFT token id already used");
@@ -234,13 +297,22 @@ contract BlueprintCore is EIP712, Payment {
         }
     }
     function createAgentWithToken(
-        bytes32 projectId, string memory base64Proposal, address privateWorkerAddress, string memory serverURL, address tokenAddress
+        bytes32 projectId,
+        string memory base64Proposal,
+        address privateWorkerAddress,
+        string memory serverURL,
+        address tokenAddress
     ) public returns (bytes32 requestID) {
         require(tokenAddress != address(0), "Token address is empty");
         requestID = createAgent(msg.sender, projectId, base64Proposal, privateWorkerAddress, serverURL, 0, tokenAddress);
     }
     function createAgentWithTokenWithSig(
-        bytes32 projectId, string memory base64Proposal, address privateWorkerAddress, string memory serverURL, address tokenAddress, bytes memory signature
+        bytes32 projectId,
+        string memory base64Proposal,
+        address privateWorkerAddress,
+        string memory serverURL,
+        address tokenAddress,
+        bytes memory signature
     ) public returns (bytes32 requestID) {
         require(tokenAddress != address(0), "Token address is empty");
         bytes32 digest = getRequestDeploymentDigest(projectId, base64Proposal, serverURL);
@@ -248,13 +320,21 @@ contract BlueprintCore is EIP712, Payment {
         requestID = createAgent(signerAddr, projectId, base64Proposal, privateWorkerAddress, serverURL, 0, tokenAddress);
     }
     function createAgentWithNFT(
-        bytes32 projectId,  string memory base64Proposal, address privateWorkerAddress, string memory serverURL, uint256 tokenId
+        bytes32 projectId,
+        string memory base64Proposal,
+        address privateWorkerAddress,
+        string memory serverURL,
+        uint256 tokenId
     ) public returns (bytes32 requestID) {
         requestID =
             createAgent(msg.sender, projectId, base64Proposal, privateWorkerAddress, serverURL, tokenId, address(0));
     }
     function createAgentWithWhitelistUsers(
-        bytes32 projectId, string memory base64Proposal, address privateWorkerAddress,  string memory serverURL, uint256 tokenId
+        bytes32 projectId,
+        string memory base64Proposal,
+        address privateWorkerAddress,
+        string memory serverURL,
+        uint256 tokenId
     ) public returns (bytes32 requestID) {
         require(whitelistUsers[msg.sender] != Status.Init, "User is not in whitelist");
         require(whitelistUsers[msg.sender] != Status.Pickup, "User already created agent");
@@ -263,7 +343,12 @@ contract BlueprintCore is EIP712, Payment {
         whitelistUsers[msg.sender] = Status.Pickup;
     }
     function createAgentWithWhitelistUsersWithSig(
-        bytes32 projectId, string memory base64Proposal, address privateWorkerAddress, string memory serverURL, uint256 tokenId, bytes memory signature
+        bytes32 projectId,
+        string memory base64Proposal,
+        address privateWorkerAddress,
+        string memory serverURL,
+        uint256 tokenId,
+        bytes memory signature
     ) public returns (bytes32 requestID) {
         bytes32 digest = getRequestDeploymentDigest(projectId, base64Proposal, serverURL);
         address signerAddr = getSignerAddress(digest, signature);
@@ -274,7 +359,12 @@ contract BlueprintCore is EIP712, Payment {
         whitelistUsers[signerAddr] = Status.Pickup;
     }
     function createAgentWithSigWithNFT(
-        bytes32 projectId, string memory base64Proposal, address privateWorkerAddress, string memory serverURL, bytes memory signature, uint256 tokenId
+        bytes32 projectId,
+        string memory base64Proposal,
+        address privateWorkerAddress,
+        string memory serverURL,
+        bytes memory signature,
+        uint256 tokenId
     ) public returns (bytes32 requestID) {
         bytes32 digest = getRequestDeploymentDigest(projectId, base64Proposal, serverURL);
         address signerAddr = getSignerAddress(digest, signature);
@@ -313,7 +403,11 @@ contract BlueprintCore is EIP712, Payment {
         emit AcceptDeployment(projectId, requestID, requestDeploymentStatus[requestID].deployWorkerAddr);
     }
     function updateWorkerDeploymentConfigCommon(
-        address tokenAddress, address userAddress, bytes32 projectId, bytes32 requestID, string memory updatedBase64Config
+        address tokenAddress,
+        address userAddress,
+        bytes32 projectId,
+        bytes32 requestID,
+        string memory updatedBase64Config
     ) internal hasProject(projectId) {
         require(requestDeploymentStatus[requestID].status != Status.Init, "requestID does not exist");
         require(bytes(updatedBase64Config).length > 0, "updatedBase64Config is empty");
@@ -332,12 +426,19 @@ contract BlueprintCore is EIP712, Payment {
         );
     }
     function updateWorkerDeploymentConfig(
-        address tokenAddress,  bytes32 projectId,  bytes32 requestID, string memory updatedBase64Config
+        address tokenAddress,
+        bytes32 projectId,
+        bytes32 requestID,
+        string memory updatedBase64Config
     ) public {
         updateWorkerDeploymentConfigCommon(tokenAddress, msg.sender, projectId, requestID, updatedBase64Config);
     }
     function updateWorkerDeploymentConfigWithSig(
-        address tokenAddress, bytes32 projectId, bytes32 requestID, string memory updatedBase64Config,  bytes memory signature
+        address tokenAddress,
+        bytes32 projectId,
+        bytes32 requestID,
+        string memory updatedBase64Config,
+        bytes memory signature
     ) public {
         bytes32 digest = getRequestDeploymentDigest(projectId, updatedBase64Config, "app.crestal.network");
         address signerAddr = getSignerAddress(digest, signature);
