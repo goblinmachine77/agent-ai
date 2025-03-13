@@ -8,6 +8,8 @@ contract BlueprintCore is EIP712, Payment {
         Status status;
         address deployWorkerAddr;
     }
+    string public VERSION;
+    uint256 public factor;
     uint256 public totalProposalRequest;
     uint256 public totalDeploymentRequest;
     mapping(address => bytes32) public latestProposalRequestID;
@@ -62,13 +64,7 @@ contract BlueprintCore is EIP712, Payment {
         string serverURL
     );
     event RequestDeployment(
-        bytes32 indexed projectID,
-        address walletAddress,
-        address solverAddress,
-        bytes32 indexed requestID,
-        string base64Proposal,
-        string serverURL
-    );
+        bytes32 indexed projectID, address walletAddress, address solverAddress,  bytes32 indexed requestID,  string base64Proposal, string serverURL );
     event RequestPrivateDeployment(
         bytes32 indexed projectID,
         address walletAddress,
@@ -92,10 +88,14 @@ contract BlueprintCore is EIP712, Payment {
         address indexed walletAddress, address feeCollectionWalletAddress, address tokenAddress, uint256 amount
     );
     modifier newProject(bytes32 projectId) {
+        // check project id
+        // slither-disable-next-line incorrect-equality,timestamp
         require(projects[projectId].id == 0, "projectId already exists");
         _;
     }
     modifier hasProjectNew(bytes32 projectId) {
+        // only new upgraded (v2) blueprint uses this function
+        // slither-disable-next-line timestamp
         require(projects[projectId].id != 0, "projectId does not exist");
         _;
     }
@@ -154,12 +154,7 @@ contract BlueprintCore is EIP712, Payment {
         setProjectId(projectId, msg.sender);
         requestID = createCommonProposalRequest(msg.sender, projectId, base64RecParam, serverURL);
     }
-    function createProjectIDAndProposalRequestWithSig(
-        bytes32 projectId,
-        string memory base64RecParam,
-        string memory serverURL,
-        bytes memory signature
-    ) public returns (bytes32 requestID) {
+    function createProjectIDAndProposalRequestWithSig( bytes32 projectId, string memory base64RecParam, string memory serverURL, bytes memory signature ) public returns (bytes32 requestID) {
         bytes32 digest = getRequestProposalDigest(projectId, base64RecParam, serverURL);
         address signerAddr = getSignerAddress(digest, signature);
         setProjectId(projectId, signerAddr);
